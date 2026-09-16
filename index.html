@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="author" content="joaovenenomacro">
+<meta name="description" content="joaovenenomacro — leitura do relatorio semanal da EIA de 16/09/2026 e o impacto no Brent, no Ibovespa e na curva de juros brasileira.">
+<meta property="og:title" content="Brent, Estoques e Ormuz">
+<meta property="og:description" content="joaovenenomacro — o que o relatorio da EIA faz com o Brent, e por que a assimetria importa mais que a direcao.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A2%3C/text%3E%3C/svg%3E">
+<title>Brent, Estoques e Ormuz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --bg:#f6f4ef; --surface:#fdfcfa; --surface-2:#efece5;
+  --ink:#191b19; --ink-2:#4d524e; --muted:#7d827d;
+  --rule:#e0dbd2; --rule-strong:#c9c2b6;
+  --accent:#9a6a1f;
+  --bull:#00806a; --bear:#c03a24; --mid:#9c9c96;
+  --bull-soft:rgba(0,128,106,.12); --bear-soft:rgba(192,58,36,.12);
+  --shadow:0 1px 2px rgba(25,27,25,.06), 0 8px 24px -16px rgba(25,27,25,.25);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141614; --surface:#1c1f1c; --surface-2:#252925;
+    --ink:#ecebe5; --ink-2:#b2b7b1; --muted:#81877f;
+    --rule:#2e332e; --rule-strong:#414740;
+    --accent:#d1a054;
+    --bull:#23a17e; --bear:#e0654e; --mid:#8a8f88;
+    --bull-soft:rgba(35,161,126,.16); --bear-soft:rgba(224,101,78,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141614; --surface:#1c1f1c; --surface-2:#252925;
+  --ink:#ecebe5; --ink-2:#b2b7b1; --muted:#81877f;
+  --rule:#2e332e; --rule-strong:#414740;
+  --accent:#d1a054;
+  --bull:#23a17e; --bear:#e0654e; --mid:#8a8f88;
+  --bull-soft:rgba(35,161,126,.16); --bear-soft:rgba(224,101,78,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif; font-size:16px; line-height:1.55;
+  margin:0; padding-block:28px 56px; padding-left:20px; padding-right:20px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px;margin:0 auto;display:flex;flex-direction:column;gap:34px}
+h1,h2,h3,.lbl,.chip,th,.tick{font-family:"IBM Plex Sans Condensed",Arial Narrow,sans-serif}
+.num,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+.eyebrow{font-family:"IBM Plex Sans Condensed",sans-serif;font-size:12px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+h1{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:700;font-size:clamp(30px,6.4vw,46px);
+  line-height:1.05;margin:0;letter-spacing:-.015em;text-wrap:balance}
+.byline{margin:14px 0 0;display:flex;align-items:center;gap:10px}
+.byline::after{content:"";height:1px;flex:1;background:var(--rule-strong)}
+.sig{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;letter-spacing:.02em;
+  color:var(--accent);border:1px solid var(--rule-strong);border-radius:2px;padding:3px 9px;white-space:nowrap}
+.dek{margin:16px 0 0;font-size:17px;color:var(--ink-2);max-width:62ch}
+
+/* verdict */
+.verdict{border:1px solid var(--rule-strong);border-left:4px solid var(--bear);
+  background:var(--surface);border-radius:3px;padding:20px 22px;box-shadow:var(--shadow)}
+.verdict .lbl{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--bear)}
+.verdict p{margin:8px 0 0;font-size:19px;line-height:1.45;text-wrap:balance}
+.verdict .fine{font-size:15px;color:var(--ink-2);margin-top:12px}
+
+/* tape */
+.tape{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.tape div{background:var(--surface);padding:12px 14px}
+.tape .k{font-family:"IBM Plex Sans Condensed",sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block}
+.tape .v{font-size:21px;font-weight:500;letter-spacing:-.01em;display:block;margin-top:3px}
+.tape .d{font-size:12.5px;margin-top:1px;display:block}
+.up{color:var(--bull)} .down{color:var(--bear)}
+
+section>h2{font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 4px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+section>.sub{margin:14px 0 0;font-size:16.5px;color:var(--ink-2);max-width:66ch}
+section{display:flex;flex-direction:column;gap:18px}
+p{margin:0}
+.prose p+p{margin-top:12px}
+.prose{max-width:66ch;font-size:16.5px}
+.prose strong{font-weight:600;color:var(--ink)}
+
+/* table */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:600px;font-size:14.5px}
+th{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  text-align:right;padding:0 0 9px;border-bottom:1px solid var(--rule-strong)}
+th:first-child{text-align:left}
+td{padding:11px 0;border-bottom:1px solid var(--rule);text-align:right;vertical-align:top}
+td:first-child{text-align:left;padding-right:18px;font-size:15px}
+td+td{padding-left:16px}
+tbody tr:hover td{background:var(--surface-2)}
+.chip{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 8px;border-radius:2px;white-space:nowrap}
+.chip.bear{background:var(--bear-soft);color:var(--bear);border:1px solid var(--bear)}
+.chip.bull{background:var(--bull-soft);color:var(--bull);border:1px solid var(--bull)}
+.chip.neu{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--rule-strong)}
+
+/* diverging chart */
+.chart{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:20px 20px 14px}
+.chart-title{font-family:"IBM Plex Sans Condensed",sans-serif;font-size:15px;font-weight:600;margin:0 0 3px}
+.chart-note{font-size:13px;color:var(--muted);margin:0 0 20px;font-family:"IBM Plex Sans Condensed",sans-serif}
+.row{display:grid;grid-template-columns:minmax(96px,1fr) minmax(150px,2.4fr) 74px;
+  align-items:center;gap:12px;padding:5px 0;position:relative}
+.row .name{font-family:"IBM Plex Sans Condensed",sans-serif;font-size:13.5px;font-weight:500;line-height:1.25}
+.track{position:relative;height:22px}
+.track::before{content:"";position:absolute;left:50%;top:-6px;bottom:-6px;width:1px;background:var(--rule-strong)}
+.bar{position:absolute;top:2px;height:18px;border-radius:0 4px 4px 0;left:50%}
+.bar.neg{border-radius:4px 0 0 4px;left:auto;right:50%}
+.bar.b-mid{background:var(--accent)}
+.zero-dot{position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;
+  background:var(--mid);transform:translate(-50%,-50%);border:2px solid var(--surface)}
+.chart+.chart{margin-top:14px}
+.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.statrow div{background:var(--surface);padding:13px 15px}
+.statrow .k{font-family:"IBM Plex Sans Condensed",sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block}
+.statrow .v{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:19px;font-weight:500;display:block;margin-top:4px}
+.statrow .d{font-size:13px;color:var(--ink-2);display:block;margin-top:3px;line-height:1.35}
+.flag{border:1px solid var(--accent);border-left:4px solid var(--accent);background:var(--surface);
+  border-radius:3px;padding:16px 18px}
+.flag .lbl{font-family:"IBM Plex Sans Condensed",sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:7px}
+.flag p{font-size:15.5px;color:var(--ink-2);line-height:1.5}
+.flag p+p{margin-top:9px}
+.bar.b-bear{background:var(--bear)} .bar.b-bull{background:var(--bull)}
+.row .val{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:13.5px;text-align:right}
+.axis{display:grid;grid-template-columns:minmax(96px,1fr) minmax(150px,2.4fr) 74px;gap:12px;margin-top:6px}
+.axis .ticks{position:relative;height:16px}
+.tick{position:absolute;font-size:10.5px;color:var(--muted);transform:translateX(-50%);white-space:nowrap;letter-spacing:.04em}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);
+  font-family:"IBM Plex Sans Condensed",sans-serif;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.swatch{width:11px;height:11px;border-radius:2px;flex:none}
+.tip{position:absolute;left:0;right:0;bottom:calc(100% + 2px);z-index:5;
+  background:var(--ink);color:var(--bg);font-family:"IBM Plex Sans Condensed",sans-serif;font-size:12px;
+  padding:7px 10px;border-radius:3px;opacity:0;visibility:hidden;transition:opacity .12s;pointer-events:none;line-height:1.4}
+.row:hover .tip,.row:focus-within .tip{opacity:1;visibility:visible}
+.total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:14px;
+  padding-top:12px;border-top:1px solid var(--rule-strong);font-family:"IBM Plex Sans Condensed",sans-serif;font-size:14px}
+.total b{font-family:"IBM Plex Mono",monospace;font-size:17px;color:var(--bear);font-weight:500}
+
+/* scenario scale */
+.scale-wrap{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:20px}
+.scale{position:relative;height:34px;margin-top:30px}
+.segs{display:flex;height:100%;border-radius:3px;overflow:hidden}
+.seg{height:100%;display:flex;align-items:center;justify-content:center;
+  font-family:"IBM Plex Sans Condensed",sans-serif;font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-2)}
+.marker{position:absolute;top:-24px;bottom:-4px;width:2px;background:var(--ink);z-index:3}
+.marker span{position:absolute;top:-4px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--ink);background:var(--surface);padding:0 6px}
+.scale-ticks{position:relative;height:18px;margin-top:8px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 17px}
+.card h3{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px}
+.card .p{font-family:"IBM Plex Mono",monospace;font-size:20px;font-weight:500;margin:6px 0 8px;display:block}
+.card p{font-size:14.5px;color:var(--ink-2);line-height:1.45}
+.card.b-bear{border-top:3px solid var(--bear)} .card.b-bull{border-top:3px solid var(--bull)}
+.card.b-neu{border-top:3px solid var(--mid)}
+
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:14px;
+  padding:15px 0;border-bottom:1px solid var(--rule);font-size:16px}
+ol.steps li:last-child{border-bottom:0}
+ol.steps li::before{content:counter(s);font-family:"IBM Plex Mono",monospace;font-size:12px;
+  color:var(--accent);border:1px solid var(--rule-strong);border-radius:50%;width:26px;height:26px;
+  display:flex;align-items:center;justify-content:center;margin-top:1px}
+ol.steps b{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:600}
+
+footer{border-top:1px solid var(--rule);padding-top:18px;font-size:13.5px;color:var(--muted);max-width:70ch}
+footer a{color:var(--accent)}
+footer p+p{margin-top:9px}
+a:focus-visible,.row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:560px){
+  .row,.axis{grid-template-columns:1fr 64px}
+  .row .name{grid-column:1/-1}
+  .axis .ticks{grid-column:1/2}
+  .axis .sp{display:none}
+}
+html,body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Painel macro · São Paulo · 16 set 2026</p>
+  <h1>Brent, Estoques e Ormuz</h1>
+  <p class="byline"><span class="sig">joaovenenomacro</span></p>
+  <p class="dek">O relatório semanal da EIA veio baixista em quase todas as linhas. Mas ele é o segundo motor do Brent hoje — o primeiro está no deserto saudita.</p>
+</header>
+
+<div class="tape">
+  <div><span class="k">Brent</span><span class="v num">105,69</span><span class="d down num">−2,81%</span></div>
+  <div><span class="k">Índice Fut</span><span class="v num">187.685</span><span class="d down num">−0,38%</span></div>
+  <div><span class="k">EWZ</span><span class="v num">37,59</span><span class="d down num">−0,52%</span></div>
+  <div><span class="k">CDS Br 5a</span><span class="v num">112,79</span><span class="d up num">+0,89%</span></div>
+  <div><span class="k">GDPNow 3T</span><span class="v num">5,1%</span><span class="d">ant. 4,4%</span></div>
+</div>
+
+<div class="verdict">
+  <span class="lbl">Direção do dado</span>
+  <p><b>Negativo para o Brent</b> — surpresa baixista agregada de <b class="num">≈ 4,2 Mb</b> em estoques. Em dia normal valeria de <b>−1,0% a −1,5%</b> no barril.</p>
+  <p class="fine">Hoje vale bem menos: com um prêmio de guerra de US$ 25–30 embutido no preço, o estoque semanal é ruído de curto prazo. O Brent caiu 2,81% pela manchete de que o oleoduto saudita volta “em dias”, não pela EIA. O dado <em>empurrou na mesma direção</em> e deu munição técnica para quem já estava vendido.</p>
+</div>
+
+<section>
+  <h2>Linha a linha</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th>Indicador</th><th>Atual</th><th>Consenso</th><th>Anterior</th><th>Leitura p/ Brent</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>Estoques de petróleo bruto</td><td class="num">−0,640 Mb</td><td class="num">−1,600 Mb</td><td class="num">−0,391 Mb</td><td><span class="chip bear">Baixista</span></td></tr>
+      <tr><td>Estoques de gasolina</td><td class="num">+0,794 Mb</td><td class="num">−1,000 Mb</td><td class="num">+1,269 Mb</td><td><span class="chip bear">Baixista forte</span></td></tr>
+      <tr><td>Estoques de destilados</td><td class="num">+1,585 Mb</td><td class="num">+0,100 Mb</td><td class="num">+2,087 Mb</td><td><span class="chip bear">Baixista forte</span></td></tr>
+      <tr><td>Óleo para aquecimento</td><td class="num">+0,684 Mb</td><td class="num">—</td><td class="num">+0,010 Mb</td><td><span class="chip bear">Baixista</span></td></tr>
+      <tr><td>Estoques em Cushing</td><td class="num">−0,342 Mb</td><td class="num">—</td><td class="num">−0,684 Mb</td><td><span class="chip neu">Neutro</span></td></tr>
+      <tr><td>Importações de bruto</td><td class="num">−1,180 Mb/d</td><td class="num">—</td><td class="num">+1,120 Mb/d</td><td><span class="chip bull">Altista</span></td></tr>
+      <tr><td>Utilização das refinarias</td><td class="num">−1,0 p.p.</td><td class="num">—</td><td class="num">−0,2 p.p.</td><td><span class="chip neu">Ambíguo</span></td></tr>
+      <tr><td>Produção de gasolina</td><td class="num">+0,336 Mb/d</td><td class="num">—</td><td class="num">−0,537 Mb/d</td><td><span class="chip bear">Baixista</span></td></tr>
+      <tr><td>Produção de destilados</td><td class="num">−0,121 Mb/d</td><td class="num">—</td><td class="num">+0,222 Mb/d</td><td><span class="chip bull">Altista leve</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>A surpresa que o mercado precifica</h2>
+  <div class="chart">
+    <p class="chart-title">Estoques — diferença entre o número publicado e o consenso</p>
+    <p class="chart-note">Milhões de barris. À direita do zero = mais estoque do que se esperava = baixista para o Brent.</p>
+
+    <div class="row" tabindex="0">
+      <span class="name">Petróleo bruto</span>
+      <span class="track"><span class="bar b-bear" style="width:24.0%"></span></span>
+      <span class="val">+0,96</span>
+      <span class="tip">Saque de 0,64 Mb contra 1,60 Mb esperado. Estoque total em 423,4 Mb.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Gasolina</span>
+      <span class="track"><span class="bar b-bear" style="width:44.8%"></span></span>
+      <span class="val">+1,79</span>
+      <span class="tip">Esperava-se saque de 1,00 Mb; veio acúmulo de 0,79 Mb. A maior surpresa da semana.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Destilados</span>
+      <span class="track"><span class="bar b-bear" style="width:37.1%"></span></span>
+      <span class="val">+1,49</span>
+      <span class="tip">Acúmulo de 1,59 Mb contra 0,10 Mb esperado — e com refino caindo.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Cushing</span>
+      <span class="track"><span class="bar b-bull neg" style="width:8.6%"></span></span>
+      <span class="val">−0,34</span>
+      <span class="tip">Saque no hub de entrega do WTI. Sustenta o spread, mas é história de WTI, não de Brent.</span>
+    </div>
+
+    <div class="axis">
+      <span class="sp"></span>
+      <span class="ticks">
+        <span class="tick" style="left:0%">−2,0</span>
+        <span class="tick" style="left:25%">−1,0</span>
+        <span class="tick" style="left:50%">0</span>
+        <span class="tick" style="left:75%">+1,0</span>
+        <span class="tick" style="left:100%">+2,0</span>
+      </span>
+      <span class="sp"></span>
+    </div>
+
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--bear)"></i> Baixista para o Brent</span>
+      <span><i class="swatch" style="background:var(--bull)"></i> Altista para o Brent</span>
+    </div>
+
+    <div class="total"><span>Surpresa agregada da semana</span><b>+4,24 Mb baixista</b></div>
+  </div>
+
+  <div class="chart">
+    <p class="chart-title">Fluxo da semana — o que entrou e saiu de cada tanque</p>
+    <p class="chart-note">Variação em milhões de barris na semana encerrada em 11/set. Saque à esquerda, acúmulo à direita.</p>
+
+    <div class="row" tabindex="0">
+      <span class="name">Petróleo bruto</span>
+      <span class="track"><span class="bar b-bull neg" style="width:16.0%"></span></span>
+      <span class="val">−0,64</span>
+      <span class="tip">Estoque comercial em 423,4 Mb — praticamente em cima da média de cinco anos.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Cushing (hub WTI)</span>
+      <span class="track"><span class="bar b-bull neg" style="width:8.6%"></span></span>
+      <span class="val">−0,34</span>
+      <span class="tip">Segunda semana de saque no ponto de entrega do WTI.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Gasolina</span>
+      <span class="track"><span class="bar b-bear" style="width:19.8%"></span></span>
+      <span class="val">+0,79</span>
+      <span class="tip">Acúmulo mesmo com o refino caindo — o sinal de demanda fraca.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Destilados</span>
+      <span class="track"><span class="bar b-bear" style="width:39.7%"></span></span>
+      <span class="val">+1,59</span>
+      <span class="tip">Maior acúmulo da semana. Segunda semana seguida de alta.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Óleo p/ aquecimento</span>
+      <span class="track"><span class="bar b-bear" style="width:17.1%"></span></span>
+      <span class="val">+0,68</span>
+      <span class="tip">Contra +0,01 Mb na semana anterior. Entrada de temporada.</span>
+    </div>
+
+    <div class="axis">
+      <span class="sp"></span>
+      <span class="ticks">
+        <span class="tick" style="left:0%">−2,0</span>
+        <span class="tick" style="left:25%">−1,0</span>
+        <span class="tick" style="left:50%">0</span>
+        <span class="tick" style="left:75%">+1,0</span>
+        <span class="tick" style="left:100%">+2,0</span>
+      </span>
+      <span class="sp"></span>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--bull)"></i> Saque — altista</span>
+      <span><i class="swatch" style="background:var(--bear)"></i> Acúmulo — baixista</span>
+    </div>
+    <div class="total"><span>Bruto + produtos, saldo da semana</span><b>+2,42 Mb de acúmulo</b></div>
+  </div>
+
+  <div class="chart">
+    <p class="chart-title">O colchão — estoque contra a média de cinco anos</p>
+    <p class="chart-note">Desvio percentual. Quanto mais à esquerda, mais apertado o mercado físico. Última semana publicada pela EIA.</p>
+
+    <div class="row" tabindex="0">
+      <span class="name">Petróleo bruto</span>
+      <span class="track"><span class="zero-dot"></span></span>
+      <span class="val">0%</span>
+      <span class="tip">Exatamente na média de cinco anos. Sem folga e sem aperto.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Gasolina</span>
+      <span class="track"><span class="bar b-bull neg" style="width:12.5%"></span></span>
+      <span class="val">−5%</span>
+      <span class="tip">206,9 Mb. O acúmulo desta semana não muda a foto estrutural.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Destilados</span>
+      <span class="track"><span class="bar b-bull neg" style="width:32.5%"></span></span>
+      <span class="val">−13%</span>
+      <span class="tip">106,3 Mb. É o diesel que sustenta o complexo por baixo.</span>
+    </div>
+
+    <div class="axis">
+      <span class="sp"></span>
+      <span class="ticks">
+        <span class="tick" style="left:0%">−20%</span>
+        <span class="tick" style="left:25%">−10%</span>
+        <span class="tick" style="left:50%">0</span>
+        <span class="tick" style="left:75%">+10%</span>
+        <span class="tick" style="left:100%">+20%</span>
+      </span>
+      <span class="sp"></span>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--bull)"></i> Abaixo da média — altista</span>
+      <span><i class="swatch" style="background:var(--mid)"></i> Na média</span>
+    </div>
+  </div>
+
+  <div class="chart">
+    <p class="chart-title">A demanda já está cedendo</p>
+    <p class="chart-note">Produto entregue ao mercado, média de quatro semanas, variação em 12 meses.</p>
+
+    <div class="row" tabindex="0">
+      <span class="name">Total de derivados</span>
+      <span class="track"><span class="bar b-bear neg" style="width:30.8%"></span></span>
+      <span class="val">−3,7%</span>
+      <span class="tip">20,1 Mb/d. Queda de demanda pressiona o Brent para baixo.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Gasolina</span>
+      <span class="track"><span class="bar b-bear neg" style="width:11.7%"></span></span>
+      <span class="val">−1,4%</span>
+      <span class="tip">8,8 Mb/d, com a bomba a US$ 4,16/galão.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">Destilados</span>
+      <span class="track"><span class="bar b-bear neg" style="width:21.7%"></span></span>
+      <span class="val">−2,6%</span>
+      <span class="tip">3,7 Mb/d, com diesel a US$ 5,97/galão.</span>
+    </div>
+
+    <div class="axis">
+      <span class="sp"></span>
+      <span class="ticks">
+        <span class="tick" style="left:0%">−6%</span>
+        <span class="tick" style="left:25%">−3%</span>
+        <span class="tick" style="left:50%">0</span>
+        <span class="tick" style="left:75%">+3%</span>
+        <span class="tick" style="left:100%">+6%</span>
+      </span>
+      <span class="sp"></span>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--bear)"></i> Demanda caindo — baixista para o Brent</span>
+    </div>
+  </div>
+
+  <div class="statrow">
+    <div><span class="k">Refino — utilização</span><span class="v">96,8%</span><span class="d">De 98,0% e 97,8% nas duas semanas anteriores. Saindo do teto físico.</span></div>
+    <div><span class="k">Brent — hoje</span><span class="v down">−2,81%</span><span class="d">Manchete de retomada do oleoduto saudita.</span></div>
+    <div><span class="k">Brent — 1 mês</span><span class="v up">+16,31%</span><span class="d">O choque de oferta ainda manda na foto curta.</span></div>
+    <div><span class="k">Brent — 12 meses</span><span class="v up">+55,54%</span><span class="d">O tamanho real do choque desde o início da guerra.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Uma linha em disputa</h2>
+  <div class="flag">
+    <span class="lbl">Importações de bruto — checar antes de operar</span>
+    <p>A tela do Investing traz <b class="num">−1,180 Mb/d</b> (queda de importação, altista). A Trading Economics descreve a mesma linha como <b class="num">+1,18 Mb/d</b> de importação líquida (alta, baixista). As duas leituras não podem estar certas.</p>
+    <p>Isso importa: os EUA são <b>exportadores líquidos</b> de bruto — a importação líquida estava em −3,76 Mb/d na semana anterior. Se a importação caiu, o saque magro de hoje é ainda mais fraco do que parece e vira sinal baixista puro; se subiu, o saque é que foi surpreendentemente bom. Não apoie tese nessa linha até a planilha da EIA sair.</p>
+  </div>
+</section>
+
+<section>
+  <h2>O que o dado realmente conta</h2>
+  <div class="prose">
+    <p><strong>O sinal está nos produtos, não no bruto.</strong> A utilização das refinarias caiu 1,0 ponto (vinha de 97,8%, praticamente no teto físico) — e mesmo assim gasolina e destilados <em>acumularam</em> quase 2,4 Mb acima do esperado. Refino rodando menos e estoque de produto subindo só tem uma explicação: a demanda está cedendo. Com gasolina a US$ 4,16/galão e diesel a US$ 5,97/galão, o produto entregue ao mercado já roda −3,7% em 12 meses na média de quatro semanas.</p>
+    <p><strong>Isso é destruição de demanda, e é a notícia macro do relatório.</strong> É o mecanismo clássico de fechamento de um choque de oferta: preço sobe até matar consumo. O mercado leu hoje a primeira evidência dura de que o barril a três dígitos está funcionando.</p>
+    <p><strong>O contrapeso altista é estrutural, não semanal.</strong> Estoque de destilados 13% abaixo da média de cinco anos e bruto exatamente na média não deixam folga nenhuma para absorver os 4–5 Mb/d que estão fora do mercado. Uma semana de acúmulo não reconstrói colchão. A linha de importações — que seria o contrapeso mais forte — está em disputa entre as fontes e não deve sustentar tese nenhuma hoje (veja abaixo).</p>
+    <p><strong>Ponto de atenção no diesel:</strong> mesmo com o acúmulo, o estoque de destilados segue ~13% abaixo da média de cinco anos. O colchão é fino. Uma semana de acúmulo não resolve — e é o diesel que transmite inflação para frete, alimentos e industriais.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Hierarquia dos motores do Brent</h2>
+  <div class="cards">
+    <div class="card b-bear">
+      <h3>1 · Oleoduto Leste–Oeste</h3>
+      <span class="p">4–5 Mb/d</span>
+      <p>Parado desde 13/set após ataques de drones. Capacidade máxima de 7 Mb/d, ~5% da oferta global. É a única rota saudita que contorna Ormuz. Domina tudo.</p>
+    </div>
+    <div class="card b-neu">
+      <h3>2 · Prazo do reparo</h3>
+      <span class="p">dias × 5–6 sem</span>
+      <p>Washington fala em “dias”; analistas independentes, em cinco a seis semanas. A Aramco tenta um <em>bypass</em> para metade da capacidade. Toda a volatilidade de hoje mora nessa divergência.</p>
+    </div>
+    <div class="card b-neu">
+      <h3>3 · Estoque em Yanbu</h3>
+      <span class="p">5–7 dias</span>
+      <p>O colchão que sustenta a exportação pelo Mar Vermelho. Quando esvaziar sem o duto de volta, o físico aperta de verdade.</p>
+    </div>
+    <div class="card b-bear">
+      <h3>4 · EIA semanal</h3>
+      <span class="p">+4,2 Mb</span>
+      <p>O relatório de hoje. Relevante, mas de segunda ordem enquanto houver 4–5 Mb/d fora do mercado. Ganha peso quando o prêmio de guerra desinflar.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Cenários para o barril</h2>
+  <div class="scale-wrap">
+    <div class="scale">
+      <div class="segs">
+        <span class="seg" style="width:20%;background:var(--bull-soft);color:var(--bull)">Duto volta</span>
+        <span class="seg" style="width:26.7%;background:var(--surface-2)">Base atual</span>
+        <span class="seg" style="width:26.7%;background:var(--bear-soft);color:var(--bear)">Reparo longo</span>
+        <span class="seg" style="width:26.6%;background:var(--bear);color:var(--surface)">Ormuz + reservas</span>
+      </div>
+      <span class="marker" style="left:34.3%"><span>Brent hoje&nbsp;&nbsp;105,69</span></span>
+    </div>
+    <div class="scale-ticks">
+      <span class="tick" style="left:0%">US$ 80</span>
+      <span class="tick" style="left:20%">95</span>
+      <span class="tick" style="left:46.7%">115</span>
+      <span class="tick" style="left:73.3%">135</span>
+      <span class="tick" style="left:100%">155</span>
+    </div>
+    <div class="legend" style="border-top:1px solid var(--rule);margin-top:20px">
+      <span>Duto restaurado pela metade em dias → o prêmio desinfla rápido e a EIA de hoje passa a mandar no preço.</span>
+    </div>
+  </div>
+  <p class="sub">A assimetria é o ponto — e ela não é uma previsão de direção. Veja abaixo o que ela quer dizer.</p>
+</section>
+
+<section>
+  <h2>O que é a assimetria</h2>
+  <div class="prose">
+    <p><strong>Assimetria não diz para onde o preço vai. Diz o tamanho de cada lado do salto.</strong> O Brent pode subir ou cair a partir daqui — ninguém sabe. O que dá para medir é quanto cabe em cada direção: a queda tem chão e a alta não tem teto.</p>
+    <p><strong>A queda é limitada porque tem um piso conhecido.</strong> Se a Aramco religar o oleoduto amanhã, o barril devolve o prêmio de guerra e volta para onde estava antes do ataque — US$ 85 a 95. Esse é o fundo do cenário bom, e ele é <em>calculável</em>: é o preço sem a interrupção. Abaixo disso só se a demanda global despencar de verdade, o que leva meses, não dias.</p>
+    <p><strong>A alta não tem piso equivalente.</strong> Se o reparo levar as cinco a seis semanas que os analistas independentes estimam, o estoque de Yanbu (5 a 7 dias de exportação) acaba muito antes. Aí não existe um número natural onde o preço para: ele sobe até destruir demanda suficiente. Os US$ 150 citados pelos analistas não são o teto, são o ponto onde alguém chutou que a conta fecha.</p>
+  </div>
+</section>
+
+<section>
+  <h2>A assimetria em números</h2>
+  <div class="chart">
+    <p class="chart-title">Quanto o Brent anda até cada cenário, a partir de US$ 105,69</p>
+    <p class="chart-note">Variação percentual necessária para o barril chegar a cada nível. Eixo simétrico, então o desequilíbrio é o que a figura mostra.</p>
+
+    <div class="row" tabindex="0">
+      <span class="name">US$ 85 — duto religado</span>
+      <span class="track"><span class="bar b-bear neg" style="width:19.6%"></span></span>
+      <span class="val">−19,6%</span>
+      <span class="tip">Prêmio de guerra totalmente devolvido. Este é o pior caso para quem está comprado.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">US$ 95 — bypass parcial</span>
+      <span class="track"><span class="bar b-bear neg" style="width:10.1%"></span></span>
+      <span class="val">−10,1%</span>
+      <span class="tip">Metade da capacidade restaurada em dias, como diz Washington.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">US$ 120 — reparo longo</span>
+      <span class="track"><span class="bar b-bull" style="width:13.5%"></span></span>
+      <span class="val">+13,5%</span>
+      <span class="tip">Cinco a seis semanas de duto parado, estoque de Yanbu esgotado.</span>
+    </div>
+    <div class="row" tabindex="0">
+      <span class="name">US$ 150 — Ormuz + reservas</span>
+      <span class="track"><span class="bar b-bull" style="width:41.9%"></span></span>
+      <span class="val">+41,9%</span>
+      <span class="tip">Cenário citado pelos analistas se a interrupção durar e as reservas estratégicas se esgotarem.</span>
+    </div>
+
+    <div class="axis">
+      <span class="sp"></span>
+      <span class="ticks">
+        <span class="tick" style="left:0%">−50%</span>
+        <span class="tick" style="left:25%">−25%</span>
+        <span class="tick" style="left:50%">0</span>
+        <span class="tick" style="left:75%">+25%</span>
+        <span class="tick" style="left:100%">+50%</span>
+      </span>
+      <span class="sp"></span>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--bear)"></i> Brent cai — no máximo 19,6 pontos</span>
+      <span><i class="swatch" style="background:var(--bull)"></i> Brent sobe — até 41,9 pontos</span>
+    </div>
+    <div class="total"><span>Pior queda × maior alta</span><b style="color:var(--ink)">−19,6% × +41,9%</b></div>
+  </div>
+
+  <div class="statrow">
+    <div><span class="k">Direção mais provável hoje</span><span class="v down">Baixa</span><span class="d">Manchete de retomada + EIA baixista + demanda cedendo. É para onde o fluxo aponta agora.</span></div>
+    <div><span class="k">Direção com maior payoff</span><span class="v up">Alta</span><span class="d">Cauda menos provável, mas mais de duas vezes maior. É onde o dinheiro está se a tese virar.</span></div>
+    <div><span class="k">Como isso se opera</span><span class="v">Opção, não futuro</span><span class="d">Assimetria se captura com prêmio limitado: call spread, ou venda de put financiando call. Vendido no futuro, a cauda de alta te pega.</span></div>
+  </div>
+
+  <p class="sub">Resumindo a sua pergunta: o petróleo <b>não tende</b> a subir nem a cair — a distribuição é que é torta. O caminho mais provável hoje aponta para baixo, na direção dos US$ 85–95. Mas o caminho menos provável vale mais que o dobro. Por isso vender o Brent aqui é uma operação de acertar muito e ganhar pouco, com risco de errar uma vez e perder muito.</p>
+</section>
+
+<section>
+  <h2>Impacto macro — da EIA até a sua tela</h2>
+  <ol class="steps">
+    <li><div><b>Estoque de produto sobe com refino caindo</b> → primeira confirmação estatística de destruição de demanda nos EUA. Reduz a cauda de US$ 150 e tira um pouco de prêmio da curva.</div></li>
+    <li><div><b>Brent recua para US$ 105</b> → o <i>breakeven</i> de inflação implícita nos Treasuries cede; o Fed ganha um pouco de folga. Mas o GDPNow do 3T subiu para 5,1% (de 4,4%): crescimento nominal segue quente, então a folga não vira corte.</div></li>
+    <li><div><b>Menos prêmio de energia</b> → alívio no dólar contra moedas importadoras (JPY, EUR) e perda de suporte para as exportadoras de petróleo. Efeito líquido sobre o BRL é ambíguo: o Brasil hoje é exportador líquido de bruto.</div></li>
+    <li><div><b>Petrobras, PRIO e 3R caem junto com o barril</b> → arrasta o Ibovespa pelo peso do bloco de óleo. É o canal mecânico do Índice Fut a −0,38% com o EWZ a −0,52%.</div></li>
+    <li><div><b>Paridade de importação melhora</b> → menos pressão para reajuste de gasolina e diesel na refinaria. As revisões de IPCA 2026 (3,8% → 4,3–4,5% nas casas grandes) param de piorar na margem.</div></li>
+    <li><div><b>Juro futuro curto cede</b> → o mercado devolve parte da redução no ciclo de corte (as casas já haviam tirado Selic terminal de 12,0% para 12,5%). Beneficia varejo, construção e crédito.</div></li>
+  </ol>
+  <p class="sub">Resumo para o WIN: a queda do Brent é <b>rotação, não direção</b>. Tira do bloco de commodities e devolve ao bloco doméstico. Como Petro e Vale pesam mais no índice do que o setor doméstico, o saldo do dia tende a ser levemente negativo — mas o saldo da curva de juros é positivo. O CDS a 112,79 subindo 0,89% no mesmo pregão avisa que parte do movimento de hoje é prêmio de risco global, não só petróleo.</p>
+</section>
+
+<section>
+  <h2>O que observar daqui</h2>
+  <ol class="steps">
+    <li><div><b>Confirmação do bypass da Aramco.</b> O gatilho binário. Metade da capacidade de volta derruba o prêmio de guerra em um pregão.</div></li>
+    <li><div><b>Importações de bruto nos EUA na próxima quarta.</b> Se seguirem colapsando, o saque de bruto volta forte e a leitura baixista de hoje se inverte.</div></li>
+    <li><div><b>Estoque de destilados contra a média de cinco anos.</b> Enquanto estiver 13% abaixo, o crack do diesel sustenta o complexo por baixo.</div></li>
+    <li><div><b>Repasse da Petrobras.</b> Com o Brent recuando, a defasagem fecha sem reajuste — melhor cenário para o IPCA e para a tese política da estatal.</div></li>
+  </ol>
+</section>
+
+<footer>
+  <p>Dados da tela: Investing.com, relatório semanal da EIA (semana encerrada em 11/set/2026) e cotações de 16/set/2026, 14h15 BRT. Contexto de preço e do oleoduto: Trading Economics, Al Jazeera, CNBC. Projeções de IPCA e Selic: revisões de XP e Banco Inter compiladas pelo InfoMoney.</p>
+  <p><span class="sig">joaovenenomacro</span> · Análise de mercado — não é recomendação de investimento.</p>
+</footer>
+
+</div>
+</body>
+</html>
